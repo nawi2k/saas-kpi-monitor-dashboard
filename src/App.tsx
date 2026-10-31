@@ -1,14 +1,21 @@
-import React from 'react';
-import { LayoutDashboard, BarChart3, Users, Settings, Bell, Search } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, Bell, Search, TrendingUp, ShieldCheck, DollarSign } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchKPIData } from './services/kpiService';
 
 export default function App() {
+  // Consumimos los datos mediante TanStack Query (Simulando API corporativa)
+  const { data: kpis, isLoading, error } = useQuery({
+    queryKey: ['kpiData'],
+    queryFn: fetchKPIData,
+  });
+
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 font-sans">
       {/* Sidebar Corporativo */}
       <aside className="w-64 border-r border-slate-800 bg-slate-900/50 hidden md:flex flex-col">
         <div className="p-6 flex items-center gap-3 border-b border-slate-800">
           <div className="bg-indigo-600 p-2 rounded-lg">
-            <BarChart3 className="w-6 h-6 text-white" />
+            <TrendingUp className="w-6 h-6 text-white" />
           </div>
           <span className="font-bold text-lg tracking-wide">NexusMetrics</span>
         </div>
@@ -50,27 +57,64 @@ export default function App() {
 
         {/* Cuerpo del Dashboard */}
         <main className="flex-1 overflow-y-auto p-8 space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Panel General de KPIs</h1>
-            <p className="text-sm text-slate-400">Resumen en tiempo real de operaciones corporativas B2B.</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Panel General de KPIs</h1>
+              <p className="text-sm text-slate-400">Resumen en tiempo real sincronizado con API corporativa.</p>
+            </div>
+            {isLoading && (
+              <span className="text-xs bg-indigo-950 text-indigo-400 border border-indigo-800 px-3 py-1 rounded-full animate-pulse">
+                Sincronizando datos...
+              </span>
+            )}
           </div>
 
-          {/* Grid de Tarjetas de Métricas */}
+          {/* Manejo de errores de red simulados */}
+          {error && (
+            <div className="bg-red-950 border border-red-800 p-4 rounded-xl text-red-200 text-sm">
+              Error al conectar con el servidor de métricas. Reintentando...
+            </div>
+          )}
+
+          {/* Grid de Tarjetas de Métricas Dinámicas */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-              <span className="text-sm font-medium text-slate-400">Ingresos Totales (MRR)</span>
-              <div className="text-3xl font-bold mt-2 text-white">$48,250.00</div>
-              <span className="text-xs text-emerald-400 font-medium mt-1 inline-block">+12.4% vs mes anterior</span>
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden">
+              <div className="flex justify-between items-start">
+                <span className="text-sm font-medium text-slate-400">Ingresos Totales (MRR)</span>
+                <DollarSign className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div className="text-3xl font-bold mt-2 text-white">
+                {isLoading ? <div className="h-8 bg-slate-800 rounded animate-pulse w-32"></div> : `$${kpis?.totalRevenue.toLocaleString()}`}
+              </div>
+              <span className="text-xs text-emerald-400 font-medium mt-2 inline-block">
+                +{kpis?.revenueGrowth}% vs mes anterior
+              </span>
             </div>
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-              <span className="text-sm font-medium text-slate-400">Conversión de Leads</span>
-              <div className="text-3xl font-bold mt-2 text-white">3.82%</div>
-              <span className="text-xs text-emerald-400 font-medium mt-1 inline-block">+0.8% esta semana</span>
+
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden">
+              <div className="flex justify-between items-start">
+                <span className="text-sm font-medium text-slate-400">Conversión de Leads</span>
+                <TrendingUp className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div className="text-3xl font-bold mt-2 text-white">
+                {isLoading ? <div className="h-8 bg-slate-800 rounded animate-pulse w-20"></div> : `${kpis?.conversionRate}%`}
+              </div>
+              <span className="text-xs text-emerald-400 font-medium mt-2 inline-block">
+                +{kpis?.conversionGrowth}% esta semana
+              </span>
             </div>
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
-              <span className="text-sm font-medium text-slate-400">Estado del Sistema</span>
-              <div className="text-3xl font-bold mt-2 text-emerald-400">99.98%</div>
-              <span className="text-xs text-slate-500 font-medium mt-1 inline-block">Sin incidencias reportadas</span>
+
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden">
+              <div className="flex justify-between items-start">
+                <span className="text-sm font-medium text-slate-400">Estado del Sistema</span>
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="text-3xl font-bold mt-2 text-emerald-400">
+                {isLoading ? <div className="h-8 bg-slate-800 rounded animate-pulse w-24"></div> : `${kpis?.systemUptime}%`}
+              </div>
+              <span className="text-xs text-slate-500 font-medium mt-2 inline-block">
+                {kpis?.activeUsers} usuarios activos conectados
+              </span>
             </div>
           </div>
         </main>
