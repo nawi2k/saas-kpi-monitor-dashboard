@@ -1,10 +1,31 @@
 import { LayoutDashboard, Users, Settings, Bell, Search, TrendingUp, ShieldCheck, DollarSign } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchKPIData } from './services/kpiService';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+
+// Datos simulados para las gráficas corporativas
+const revenueData = [
+  { month: 'Ene', revenue: 32000 },
+  { month: 'Feb', revenue: 35000 },
+  { month: 'Mar', revenue: 41000 },
+  { month: 'Abr', revenue: 39000 },
+  { month: 'May', revenue: 45000 },
+  { month: 'Jun', revenue: 48250 },
+  { month: 'Jul', revenue: 52430 },
+];
+
+const userActivityData = [
+  { day: 'Lun', active: 1100 },
+  { day: 'Mar', active: 1350 },
+  { day: 'Mié', active: 1250 },
+  { day: 'Jue', active: 1420 },
+  { day: 'Vie', active: 1580 },
+  { day: 'Sáb', active: 950 },
+  { day: 'Dom', active: 890 },
+];
 
 export default function App() {
-  // Consumimos los datos mediante TanStack Query (Simulando API corporativa)
-  const { data: kpis, isLoading, error } = useQuery({
+  const { data: kpis, isLoading } = useQuery({
     queryKey: ['kpiData'],
     queryFn: fetchKPIData,
   });
@@ -69,13 +90,6 @@ export default function App() {
             )}
           </div>
 
-          {/* Manejo de errores de red simulados */}
-          {error && (
-            <div className="bg-red-950 border border-red-800 p-4 rounded-xl text-red-200 text-sm">
-              Error al conectar con el servidor de métricas. Reintentando...
-            </div>
-          )}
-
           {/* Grid de Tarjetas de Métricas Dinámicas */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl relative overflow-hidden">
@@ -115,6 +129,45 @@ export default function App() {
               <span className="text-xs text-slate-500 font-medium mt-2 inline-block">
                 {kpis?.activeUsers} usuarios activos conectados
               </span>
+            </div>
+          </div>
+
+          {/* Sección de Gráficos Recharts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* Gráfico de Ingresos */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">Evolución de Ingresos (MRR)</h3>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueData}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
+                    <YAxis stroke="#64748b" fontSize={12} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
+                    <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Gráfico de Actividad de Usuarios */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">Actividad Diaria de Usuarios</h3>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={userActivityData}>
+                    <XAxis dataKey="day" stroke="#64748b" fontSize={12} />
+                    <YAxis stroke="#64748b" fontSize={12} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }} />
+                    <Bar dataKey="active" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
         </main>
