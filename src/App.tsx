@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Users, Settings, Bell, Search, TrendingUp, ShieldCheck, DollarSign, Calendar, Building2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, Bell, Search, TrendingUp, ShieldCheck, DollarSign, Calendar, Building2, CheckCircle2, AlertCircle, XCircle, Download, FileText, Check } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchKPIData } from './services/kpiService';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
@@ -75,6 +75,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'clients' | 'settings'>('dashboard');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | 'year'>('year');
   const [clientSearch, setClientSearch] = useState('');
+  
+  // Estados para la Parte 3 (Exportación de Reportes)
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   const { data: kpis, isLoading } = useQuery({
     queryKey: ['kpiData', timeRange],
@@ -83,11 +87,21 @@ export default function App() {
 
   const currentData = mockChartData[timeRange];
 
-  // Filtrar clientes B2B según la búsqueda
   const filteredClients = mockClients.filter(client => 
     client.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
     client.contact.toLowerCase().includes(clientSearch.toLowerCase())
   );
+
+  // Función simulada de exportación corporativa (Parte 3)
+  const handleExportReport = () => {
+    setIsExporting(true);
+    setExportSuccess(false);
+    setTimeout(() => {
+      setIsExporting(false);
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 3500); // Ocultar mensaje de éxito después de 3.5s
+    }, 1500);
+  };
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 font-sans">
@@ -123,7 +137,7 @@ export default function App() {
 
       {/* Contenido Principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header Superior */}
+        {/* Header Superior con Botón de Exportación (Parte 3) */}
         <header className="h-16 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-6">
           <div className="flex items-center gap-4 bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-700/50 w-80">
             <Search className="w-4 h-4 text-slate-400" />
@@ -133,7 +147,32 @@ export default function App() {
               className="bg-transparent border-none outline-none text-sm text-slate-200 placeholder-slate-500 w-full"
             />
           </div>
+
           <div className="flex items-center gap-4">
+            {/* Botón de Exportación de Reportes Corporativos */}
+            <button 
+              onClick={handleExportReport}
+              disabled={isExporting}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-3.5 py-2 rounded-lg transition-all disabled:opacity-50"
+            >
+              {isExporting ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Generando PDF...
+                </>
+              ) : exportSuccess ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-300" />
+                  ¡Reporte Descargado!
+                </>
+              ) : (
+                <>
+                  <Download className="w-3.5 h-3.5" />
+                  Exportar Reporte
+                </>
+              )}
+            </button>
+
             <button className="p-2 text-slate-400 hover:text-white relative">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full"></span>
@@ -154,7 +193,7 @@ export default function App() {
                   <p className="text-sm text-slate-400">Resumen en tiempo real sincronizado con API corporativa.</p>
                 </div>
                 
-                {/* Selector de Rango de Tiempo */}
+                {/* Selector de Rango de Tiempo (Parte 1) */}
                 <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
                   <Calendar className="w-4 h-4 text-slate-400 ml-2" />
                   <button 
@@ -279,7 +318,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Tabla de Cuentas B2B */}
+              {/* Tabla de Cuentas B2B (Parte 2) */}
               <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
